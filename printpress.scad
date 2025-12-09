@@ -24,7 +24,7 @@ module base(w, h, z) {
 				profile(h, z, z/7 * 1.5);
 
 		xrot(90)
-			linear_extrude(w*3, center= true)
+			linear_extrude(w*3, center=true)
 				profile(w, z, z / 7 * 1.5);
 	}
 }
@@ -33,15 +33,15 @@ module main() {
 
 	tolerance = 0.2;
 
-	sheetW = 140;
+	sheetW = 130;
 	supportW = 40;
 
 	baseW = sheetW + 2 * supportW;
 	baseH = 180;
 
 	h = 40;
-	plateHeight = 15;
-	weightHeight = 20;
+	plateHeight = 10;
+	weightHeight = 25;
 	plateMargin = 20;
 
 	supportHeight = 120;
@@ -60,25 +60,19 @@ module main() {
 	}
 
 	lidThickness = 5;
-	*up(h - plateHeight + lidThickness / 2)
+	up(h - plateHeight + lidThickness / 2 + 20)
 		cube([sheetW, baseH, lidThickness], center = true);
 	
-	left(supportOffset) up(h) support(supportHeight, supportSlotSize, supportRadius);
-	right(supportOffset) up(h) support(supportHeight, supportSlotSize, supportRadius);
+	left(supportOffset) up(h*2) support(supportHeight, supportSlotSize, supportRadius);
+	right(supportOffset) up(h*2) support(supportHeight, supportSlotSize, supportRadius);
 }
 
-module supportSlot(slot) {
-	down(slot/2)
-		cube(slot, center=true);
-}
-
-module support(height, slot, rad) {
+module support(height, slotHeight, rad) {
 	union() {
-		down(slot)
-		linear_extrude(height + slot, twist = 1.4 * 360)
+		down(slotHeight)
+		linear_extrude(height + slotHeight, twist = 1.4 * 360)
 		zrot_copies(n=3)
 			right(0.8 * rad) circle(rad);
-		//supportSlot(slot);
 	}
 }
 
