@@ -1,15 +1,16 @@
 include <BOSL/transforms.scad>
 
 $fa = 1;
-$fs = 1;
+$fs = 4;
 
 module profile(w, h, smallr) {
-	lowerScale = 0.5;
+	lowerScale = 0.35;
 	xflip_copy()
 	back_half(s = w * 2, planar = true)
 		union() {
 			square([w/2, h]);
 			square([w/2 + smallr, h - smallr]);
+			square([w/2 + smallr + lowerScale * (h - smallr) + 2, 10]);
 
 			right(w/2) back(h - smallr) circle(smallr);
 			right(w/2 + smallr) scale([lowerScale, 1]) circle(h - smallr);
@@ -30,16 +31,23 @@ module base(w, h, z) {
 
 module main() {
 
-	sheetW = 150;
+	tolerance = 0.2;
+
+	sheetW = 140;
 	supportW = 40;
 
 	baseW = sheetW + 2 * supportW;
-	baseH = 200;
+	baseH = 180;
 
 	h = 40;
 	plateHeight = 15;
 	weightHeight = 20;
 	plateMargin = 20;
+
+	supportHeight = 120;
+	supportSlotSize = 30;
+	supportOffset = sheetW/2 + supportW/2;
+	supportRadius = 10;
 
 	difference() {
 		base(baseW, baseH, h);
@@ -47,11 +55,31 @@ module main() {
 			cube([sheetW, baseH, plateHeight], center = true);
 		up(h - plateHeight - weightHeight/2 + 0.2)
 			cube([sheetW - plateMargin, baseH - plateMargin, weightHeight], center = true);
+		left(supportOffset) up(h) support(supportHeight, supportSlotSize, supportRadius + tolerance);
+		right(supportOffset) up(h) support(supportHeight, supportSlotSize, supportRadius + tolerance);
 	}
 
 	lidThickness = 5;
-	#up(h - plateHeight + lidThickness / 2)
-		cube([baseW, baseH, lidThickness], center = true);
+	*up(h - plateHeight + lidThickness / 2)
+		cube([sheetW, baseH, lidThickness], center = true);
+	
+	left(supportOffset) up(h) support(supportHeight, supportSlotSize, supportRadius);
+	right(supportOffset) up(h) support(supportHeight, supportSlotSize, supportRadius);
+}
+
+module supportSlot(slot) {
+	down(slot/2)
+		cube(slot, center=true);
+}
+
+module support(height, slot, rad) {
+	union() {
+		down(slot)
+		linear_extrude(height + slot, twist = 1.4 * 360)
+		zrot_copies(n=3)
+			right(0.8 * rad) circle(rad);
+		//supportSlot(slot);
+	}
 }
 
 main();
