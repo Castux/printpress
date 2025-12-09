@@ -22,24 +22,25 @@ module base(w, h, z) {
 	intersection() {
 		rotate([90, 0, 90])
 			linear_extrude(h*3,  center=true)
-				profile(h, z, z/7 * 3);
+				profile(h, z, z/7 * 1.5);
 
 		rotate([90, 0, 0])
 			linear_extrude(w*3, center= true)
-				profile(w, z, z / 7 * 3);
+				profile(w, z, z / 7 * 1.5);
 	}
 }
 
 module main() {
 
 	sheetW = 150;
+	supportW = 40;
 
-	baseW = sheetW + 2 * 50;
+	baseW = sheetW + 2 * supportW;
 	baseH = 200;
 
-	h = 70;
+	h = 40;
 	plateHeight = 15;
-	weightHeight = 40;
+	weightHeight = 20;
 	plateMargin = 20;
 
 	difference() {
