@@ -1,3 +1,5 @@
+include <BOSL/transforms.scad>
+
 $fa = 1;
 $fs = 1;
 
@@ -5,14 +7,14 @@ module profile(w, h, smallr) {
 	lowerScale = 0.5;
 	difference() {
 		union() {
-			translate([-w/2, 0]) square([w, h]);
-			translate([-(w+smallr)/2, 0]) square([w + smallr, h - smallr]);
+			left(w/2) square([w, h]);
+			left((w+smallr)/2) square([w + smallr, h - smallr]);
 
-			translate([w/2, h - smallr]) circle(smallr);
-			translate([w/2 + smallr, 0]) scale([lowerScale, 1]) circle(h - smallr);
+			right(w/2) back(h - smallr) circle(smallr);
+			right(w/2 + smallr) scale([lowerScale, 1]) circle(h - smallr);
 
-			translate([-w/2, h - smallr]) circle(smallr);
-			translate([-w/2 - smallr, 0]) scale([lowerScale, 1]) circle(h - smallr);
+			left(w/2) back(h - smallr) circle(smallr);
+			left(w/2 + smallr) scale([lowerScale, 1]) circle(h - smallr);
 		}
 		translate([-w, -2*h]) square([2*w, 2*h]);
 	}
@@ -20,11 +22,11 @@ module profile(w, h, smallr) {
 
 module base(w, h, z) {
 	intersection() {
-		rotate([90, 0, 90])
+		zrot(90) xrot(90)
 			linear_extrude(h*3,  center=true)
 				profile(h, z, z/7 * 1.5);
 
-		rotate([90, 0, 0])
+		xrot(90)
 			linear_extrude(w*3, center= true)
 				profile(w, z, z / 7 * 1.5);
 	}
@@ -45,14 +47,14 @@ module main() {
 
 	difference() {
 		base(baseW, baseH, h);
-		translate([0, 0, h - plateHeight/2 + 0.1])
+		up(h - plateHeight/2 + 0.1)
 			cube([sheetW, baseH, plateHeight], center = true);
-		translate([0, 0, h - plateHeight - weightHeight/2 + 0.2])
+		up(h - plateHeight - weightHeight/2 + 0.2)
 			cube([sheetW - plateMargin, baseH - plateMargin, weightHeight], center = true);
 	}
 
 	lidThickness = 5;
-	#translate([0, 0, h - plateHeight + lidThickness / 2])
+	#up(h - plateHeight + lidThickness / 2)
 		cube([baseW, baseH, lidThickness], center = true);
 }
 
