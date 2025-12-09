@@ -5,25 +5,21 @@ $fs = 1;
 
 module profile(w, h, smallr) {
 	lowerScale = 0.5;
-	difference() {
+	xflip_copy()
+	back_half(s = w * 2, planar = true)
 		union() {
-			left(w/2) square([w, h]);
-			left((w+smallr)/2) square([w + smallr, h - smallr]);
+			square([w/2, h]);
+			square([w/2 + smallr, h - smallr]);
 
 			right(w/2) back(h - smallr) circle(smallr);
 			right(w/2 + smallr) scale([lowerScale, 1]) circle(h - smallr);
-
-			left(w/2) back(h - smallr) circle(smallr);
-			left(w/2 + smallr) scale([lowerScale, 1]) circle(h - smallr);
 		}
-		translate([-w, -2*h]) square([2*w, 2*h]);
-	}
 }
 
 module base(w, h, z) {
 	intersection() {
 		zrot(90) xrot(90)
-			linear_extrude(h*3,  center=true)
+			linear_extrude(h*3, center=true)
 				profile(h, z, z/7 * 1.5);
 
 		xrot(90)
