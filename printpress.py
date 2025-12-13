@@ -1,7 +1,8 @@
+# %%
+
 from build123d import *
 from ocp_vscode import show
-#from yacv_server import show
-
+# %%
 # Supports
 
 supportRadius = 10
@@ -14,6 +15,7 @@ supportSketch += Pos(0, -0.8 * supportRadius, 0) * Circle(supportRadius / 3)
 
 support = Solid.extrude_linear_with_rotation(supportSketch, (0,0), (0, 0, supportHeight), 3 * 180)
 support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
+support.label = "support"
 
 # Base profile
 
@@ -42,8 +44,6 @@ sheetH = 200
 sheetMargin = 6
 sheetDepth = 10
 
-print(balastH*balastW * (balastDepth-sheetDepth))
-
 supportMargin = 40
 supportOffset = (sheetW + sheetMargin + supportMargin) / 2
 
@@ -71,11 +71,13 @@ balastH = baseH - 2*sheetMargin
 reinforcementW = 20
 
 bottomFace = base.faces().sort_by().first
-balastSketch = Rectangle(balastW, balastH) \
-    - Pos(supportOffset, 0) * Circle(supportMargin * 0.5) \
-    - Pos(-supportOffset, 0) * Circle(supportMargin * 0.5) \
-    - Rectangle(balastW, reinforcementW) \
-    - Rectangle(reinforcementW, balastH)
+balastSketch = Rectangle(balastW, balastH)
+balastSketch -= [
+	Pos(supportOffset, 0) * Circle(supportMargin * 0.5),
+    Pos(-supportOffset, 0) * Circle(supportMargin * 0.5),
+    Rectangle(balastW, reinforcementW),
+    Rectangle(reinforcementW, balastH)
+]
 
 base -= extrude(Plane(bottomFace) * balastSketch, -balastDepth)
 
@@ -92,12 +94,18 @@ footProfile += Line(footProfile @ 1, (0, 0))
 footProfile = Pos(0, -footH) * footProfile
 
 foot = revolve(make_face(Plane.XZ * footProfile), axis=Axis.Z)
+footJoint = extrude(Plane(foot.faces().sort_by().last) * Rectangle(15, 15), 10)
+foot += footJoint
+foot.label = "foot"
 
 feetPosLeft = base.faces().sort_by().first.vertices().group_by(Axis.X)[1].sort_by(Axis.Y)
 feetPosRight = base.faces().sort_by().first.vertices().group_by(Axis.X)[-2].sort_by(Axis.Y)
 feetPos = [feetPosLeft.first, feetPosLeft.last, feetPosRight.first, feetPosRight.last]
 
 feet = [Pos(vert.X, vert.Y) * foot for vert in feetPos]
+
+base -= [Pos(vert.X, vert.Y) * scale(footJoint, 1.05) for vert in feetPos]
+base.label = "base"
 
 # Final assembly
 
