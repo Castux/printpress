@@ -21,17 +21,16 @@ def baseProfile(baseH = 40, baseW = 120):
 
     short = baseH / 9
     tall = baseH * 3 / 9
-    margin = 13
 
-    ln = Line((0, 0), (baseW/2 + margin, 0))
-    ln += Line(ln @ 1, ln @ 1 + (0, short))
-    ln += Line(ln @ 1, ln @ 1 + (-3, 0))
-    ln += RadiusArc(ln @ 1, ln @ 1 + (-4, tall), -tall)
-    ln += Line(ln @ 1, ln @ 1 + (0, short))
-    ln += RadiusArc(ln @ 1, ln @ 1 + (-4, tall), tall)
-    ln += Line(ln @ 1, ln @ 1 + (-2, 0))
-    ln += Line(ln @ 1, ((ln @ 1).X, baseH))
-    ln += Line(ln @ 1, (0, baseH))
+    ln = Line((0, baseH), (baseW/2, baseH))
+    ln += Line(ln @ 1, ln @ 1 + (0, -short))
+    ln += Line(ln @ 1, ln @ 1 + (2, 0))
+    ln += RadiusArc(ln @ 1, ln @ 1 + (4, -tall), -tall)
+    ln += Line(ln @ 1, ln @ 1 + (0, -short))
+    ln += RadiusArc(ln @ 1, ln @ 1 + (4, -tall), tall)
+    ln += Line(ln @ 1, ln @ 1 + (3, 0))
+    ln += Line(ln @ 1, ln @ 1 + (0, -short))
+    ln += Line(ln @ 1, (0, 0))
     ln += mirror(ln, Plane.YZ)
 
     return ln
@@ -51,12 +50,13 @@ baseThickness = 40
 baseW = sheetW + 2*supportMargin + 2*sheetMargin
 baseH = sheetH + 2*sheetMargin
 
-tmp1 = make_face(Plane.XZ.offset(-baseH) * baseProfile(baseThickness, baseW))
+tmp1 = make_face(Plane.XZ.offset(baseH) * baseProfile(baseThickness, baseW))
 tmp1 = extrude(tmp1, baseH * 2)
-tmp2 = make_face(Plane.YZ.offset(-baseW) * baseProfile(baseThickness, baseH))
+tmp2 = make_face(Plane.YZ.offset(baseW) * baseProfile(baseThickness, baseH))
 tmp2 = extrude(tmp2, baseW * 2)
 
 base = tmp1 & tmp2
+
 topFace = base.faces().sort_by().last
 
 plateIndent = Plane(topFace) * Rectangle(sheetW, sheetH)
