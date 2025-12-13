@@ -1,7 +1,7 @@
 include <BOSL/transforms.scad>
 
 $fa = 1;
-$fs = 4;
+$fs = 1;
 
 module profile(w, h, smallr) {
 	lowerScale = 0.35;
@@ -70,9 +70,13 @@ module main() {
 module support(height, slotHeight, rad) {
 	union() {
 		down(slotHeight)
-		linear_extrude(height + slotHeight, twist = 1.4 * 360)
-		zrot_copies(n=3)
+		linear_extrude(height + slotHeight, twist = 2.6 * 360)
+		union() {
 			right(0.8 * rad) circle(rad);
+			left(0.8 * rad) circle(rad);
+			back(0.8 * rad) circle(rad/3);
+			forward(0.8 * rad) circle(rad/3);
+		}
 	}
 }
 
