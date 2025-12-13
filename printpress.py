@@ -1,8 +1,7 @@
-# %%
-
 from build123d import *
-from ocp_vscode import show
-# %%
+from ocp_vscode import *
+set_defaults(reset_camera=Camera.CENTER, helper_scale=5)
+
 # Supports
 
 supportRadius = 10
@@ -39,8 +38,8 @@ def baseProfile(baseH = 40, baseW = 120):
 
 # Base construction
 
-sheetW = 140
-sheetH = 200
+sheetW = 120
+sheetH = 180
 sheetMargin = 6
 sheetDepth = 10
 
@@ -87,8 +86,8 @@ footH = 30
 
 footProfile = Line((0, footH), (10, footH))
 footProfile += SagittaArc(footProfile @ 1, footProfile @ 1 + (0, -5), 1)
-footProfile += EllipticalCenterArc(footProfile @ 1 + (0, -5), 14, 5, start_angle= -90, end_angle=90)
-footProfile += RadiusArc(footProfile @ 1, (3, 0), 15)
+footProfile += EllipticalCenterArc(footProfile @ 1 + (0, -5), 12, 5, start_angle= -90, end_angle=90)
+footProfile += RadiusArc(footProfile @ 1, (4, 0), 15)
 footProfile += Line(footProfile @ 1, (0, 0))
 
 footProfile = Pos(0, -footH) * footProfile
@@ -116,3 +115,4 @@ assem = Compound(children = [
 ] + feet)
 
 show(assem)
+#export_step(assem, "print.step")
