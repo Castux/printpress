@@ -45,7 +45,7 @@ sheetDepth = 10
 balastDepth = 25
 
 supportMargin = 40
-supportOffset = sheetW / 2 + sheetMargin + supportMargin / 2
+supportOffset = (sheetW + sheetMargin + supportMargin) / 2
 
 baseThickness = 40
 baseW = sheetW + 2*supportMargin + 2*sheetMargin
