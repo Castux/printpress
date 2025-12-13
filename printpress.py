@@ -1,11 +1,14 @@
 from build123d import *
 from ocp_vscode import *
+from bd_warehouse.thread import IsoThread
 set_defaults(reset_camera=Camera.CENTER, helper_scale=5)
 
 # Supports
 
 supportRadius = 10
 supportHeight = 130
+supportThreadRadius = 10
+supportThreadDepth = 30
 
 supportSketch = Pos(0.8 * supportRadius, 0, 0) * Circle(supportRadius)
 supportSketch += Pos(-0.8 * supportRadius, 0, 0) * Circle(supportRadius)
@@ -15,6 +18,13 @@ supportSketch += Pos(0, -0.8 * supportRadius, 0) * Circle(supportRadius / 3)
 support = Solid.extrude_linear_with_rotation(supportSketch, (0,0), (0, 0, supportHeight), 3 * 180)
 support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
 support.label = "support"
+
+thread = IsoThread(major_diameter = supportThreadRadius * 2, pitch = 8, length = supportThreadDepth, external = True, end_finishes=("square", "chamfer"))
+threadSocket = IsoThread(major_diameter = supportThreadRadius * 2, pitch = 8, length = supportThreadDepth, external = False, end_finishes=("square", "chamfer"))
+
+thread += Cylinder(radius=thread.min_radius, height= supportThreadDepth, align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+support += Rot(180, 0, 0) * thread
 
 # Base profile
 
@@ -62,6 +72,14 @@ topFace = base.faces().sort_by().last
 plateIndent = Plane(topFace) * Rectangle(sheetW, sheetH)
 base -= extrude(plateIndent, -sheetDepth)
 
+# Sockets for supports
+
+base -= extrude(Plane(topFace) * Pos(supportOffset, 0) * Circle(supportThreadRadius), -supportThreadDepth - 1)
+base -= extrude(Plane(topFace) * Pos(-supportOffset, 0) * Circle(supportThreadRadius), -supportThreadDepth - 1)
+
+base += Plane(topFace) * Pos(supportOffset, 0) * Rot(180, 0, 180) * threadSocket
+base += Plane(topFace) * Pos(-supportOffset, 0) * Rot(180, 0, 180) * threadSocket
+
 # Cavity under ("balast" will be filled with rice or something :D)
 
 balastDepth = 25
@@ -72,8 +90,8 @@ reinforcementW = 20
 bottomFace = base.faces().sort_by().first
 balastSketch = Rectangle(balastW, balastH)
 balastSketch -= [
-	Pos(supportOffset, 0) * Circle(supportMargin * 0.5),
-    Pos(-supportOffset, 0) * Circle(supportMargin * 0.5),
+	Pos(supportOffset, 0) * Circle(supportThreadRadius * 1.5),
+    Pos(-supportOffset, 0) * Circle(supportThreadRadius * 1.5),
     Rectangle(balastW, reinforcementW),
     Rectangle(reinforcementW, balastH)
 ]

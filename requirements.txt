@@ -1,3 +1,4 @@
 build123d
 ocp_vscode
 git+https://github.com/jdegenstein/filewatcher123d
+git+https://github.com/gumyr/bd_warehouse
