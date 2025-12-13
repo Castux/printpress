@@ -41,7 +41,7 @@ sheetW = 140
 sheetH = 200
 sheetMargin = 6
 sheetDepth = 10
-balastDepth = 25
+
 
 supportMargin = 40
 supportOffset = (sheetW + sheetMargin + supportMargin) / 2
@@ -60,14 +60,26 @@ base = tmp1 & tmp2
 topFace = base.faces().sort_by().last
 
 plateIndent = Plane(topFace) * Rectangle(sheetW, sheetH)
-balastIndent = Plane(topFace) * Rectangle(sheetW - 2*sheetMargin, sheetH - 2*sheetMargin)
 base -= extrude(plateIndent, -sheetDepth)
-base -= extrude(balastIndent, -sheetDepth-balastDepth)
+
+balastDepth = 25
+balastW = baseW - 2*sheetMargin
+balastH = baseH - 2*sheetMargin
+reinforcementW = 20
+
+bottomFace = base.faces().sort_by().first
+balastSketch = Rectangle(balastW, balastH) \
+    - Pos(supportOffset, 0) * Circle(supportMargin * 0.5) \
+    - Pos(-supportOffset, 0) * Circle(supportMargin * 0.5) \
+    - Rectangle(balastW, reinforcementW) \
+    - Rectangle(reinforcementW, balastH)
+
+base -= extrude(Plane(bottomFace) * balastSketch, -balastDepth)
 
 assem = Compound(children = [
     base,
     Pos(supportOffset, 0, baseThickness) * support,
-    Pos(-supportOffset, 0, baseThickness) * support
+    Pos(-supportOffset, 0, baseThickness) * support,
 ])
 
 show(assem)
