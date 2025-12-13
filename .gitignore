@@ -1,2 +1,5 @@
 venv
 venv-win
+*.stl
+*.step
+*.3mf
