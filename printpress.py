@@ -13,7 +13,7 @@ supportSketch += Pos(0, 0.8 * supportRadius, 0) * Circle(supportRadius / 3)
 supportSketch += Pos(0, -0.8 * supportRadius, 0) * Circle(supportRadius / 3)
 
 support = Solid.extrude_linear_with_rotation(supportSketch, (0,0), (0, 0, supportHeight), 3 * 180)
-support = fillet(support.edges().group_by(Axis.Z)[1], radius=1)
+support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
 
 # Base profile
 
@@ -38,8 +38,8 @@ def baseProfile(baseH = 40, baseW = 120):
 
 # Base construction
 
-sheetW = 120
-sheetH = 180
+sheetW = 140
+sheetH = 200
 sheetMargin = 6
 sheetDepth = 10
 balastDepth = 25
@@ -64,7 +64,10 @@ balastIndent = Plane(topFace) * Rectangle(sheetW - 2*sheetMargin, sheetH - 2*she
 base -= extrude(plateIndent, -sheetDepth)
 base -= extrude(balastIndent, -sheetDepth-balastDepth)
 
-base += Pos(supportOffset, 0, baseThickness) * support
-base += Pos(-supportOffset, 0, baseThickness) * support
+assem = Compound(children = [
+    base,
+    Pos(supportOffset, 0, baseThickness) * support,
+    Pos(-supportOffset, 0, baseThickness) * support
+])
 
-show(base)
+show(assem)
