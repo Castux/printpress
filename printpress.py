@@ -3,6 +3,8 @@ from ocp_vscode import *
 from bd_warehouse.thread import IsoThread
 set_defaults(reset_camera=Camera.CENTER, helper_scale=5)
 
+eps = 0.2
+
 # Supports
 
 supportRadius = 10
@@ -17,7 +19,7 @@ supportSketch += Pos(0, 0.8 * supportRadius, 0) * Circle(supportRadius / 3)
 supportSketch += Pos(0, -0.8 * supportRadius, 0) * Circle(supportRadius / 3)
 
 support = Solid.extrude_linear_with_rotation(supportSketch, (0,0), (0, 0, supportHeight), 3 * 180)
-support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
+#support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
 
 # Supports threads
 
@@ -28,8 +30,11 @@ support += Rot(180, 0, 0) * thread
 
 # Support top
 
-support += extrude(Plane(support.faces().sort_by().last) * Circle(10), 30)
-support = fillet(support.edges().sort_by().last, radius = 5)
+supportTopRadius = 10
+supportTopHeight = 32
+
+support += extrude(Plane(support.faces().sort_by().last) * Circle(supportTopRadius), supportTopHeight)
+support = fillet(support.edges().sort_by().last, radius = 2)
 
 support.label = "support"
 
@@ -133,7 +138,42 @@ base.label = "base"
 
 # Beam
 
-beam = Pos(0, 0, 10) * Box(baseW, 60, 20)
+beamThickness = 20
+
+def beamProfile(w):
+    h = beamThickness
+    ln = Line((0, h), (w/2 + 8, h))
+    ln += Line(ln @ 1, ln @ 1 + (0, -4))
+    ln += Line(ln @ 1, ln @ 1 + (-4, 0))
+    ln += RadiusArc(ln @ 1, ln @ 1 + (-4, -12), 12)
+    ln += Line(ln @ 1, ln @ 1 + (0, -4))
+    ln += Line(ln @ 1, (0,0))
+    ln += mirror(ln, Plane.YZ)
+
+    return ln
+
+beamW = baseW
+beamH = 60
+
+beamTmp1 = make_face(Plane.XZ.offset(beamH) * beamProfile(beamW))
+beamTmp1 = extrude(beamTmp1, beamH * 2)
+beamTmp2 = make_face(Plane.YZ.offset(beamW) * beamProfile(beamH))
+beamTmp2 = extrude(beamTmp2, baseW * 2)
+
+beam = beamTmp1 & beamTmp2
+
+beamTopFace = beam.faces().sort_by().last
+beam -= extrude(Plane(beamTopFace) * Pos(supportOffset, 0) * Circle(supportTopRadius + eps), -beamThickness)
+beam -= extrude(Plane(beamTopFace) * Pos(-supportOffset, 0) * Circle(supportTopRadius + eps), -beamThickness)
+
+beamPeg = Box(10, supportTopRadius*2 + 20, 6, align=(Align.CENTER, Align.CENTER, Align.MIN))
+beamPeg.label = "beamPeg"
+
+support -= Pos(0, 0, supportHeight + beamThickness) * scale(beamPeg, 1.05)
+pegs = [
+	Pos( supportOffset, 0, baseThickness + supportHeight + beamThickness) * beamPeg,
+	Pos(-supportOffset, 0, baseThickness + supportHeight + beamThickness) * beamPeg,
+]
 
 # Final assembly
 
@@ -142,7 +182,7 @@ assem = Compound(children = [
     Pos(0, 0, baseThickness + supportHeight) * beam,
     Pos(supportOffset, 0, baseThickness) * support,
     Pos(-supportOffset, 0, baseThickness) * support,
-] + feet)
+] + feet + pegs)
 
 show(assem)
 #export_step(assem, "print.step")
