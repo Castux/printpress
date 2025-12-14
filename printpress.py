@@ -9,6 +9,7 @@ supportRadius = 10
 supportHeight = 130
 supportThreadRadius = 10
 supportThreadDepth = 30
+threadEps = 0.4
 
 supportSketch = Pos(0.8 * supportRadius, 0, 0) * Circle(supportRadius)
 supportSketch += Pos(-0.8 * supportRadius, 0, 0) * Circle(supportRadius)
@@ -17,14 +18,20 @@ supportSketch += Pos(0, -0.8 * supportRadius, 0) * Circle(supportRadius / 3)
 
 support = Solid.extrude_linear_with_rotation(supportSketch, (0,0), (0, 0, supportHeight), 3 * 180)
 support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
-support.label = "support"
+
+# Supports threads
 
 thread = IsoThread(major_diameter = supportThreadRadius * 2, pitch = 8, length = supportThreadDepth, external = True, end_finishes=("square", "chamfer"))
-threadSocket = IsoThread(major_diameter = supportThreadRadius * 2, pitch = 8, length = supportThreadDepth, external = False, end_finishes=("square", "chamfer"))
-
+threadSocket = IsoThread(major_diameter = supportThreadRadius * 2 + threadEps * 2, pitch = 8, length = supportThreadDepth, external = False, end_finishes=("square", "chamfer"))
 thread += Cylinder(radius=thread.min_radius, height= supportThreadDepth, align=(Align.CENTER, Align.CENTER, Align.MIN))
-
 support += Rot(180, 0, 0) * thread
+
+# Support top
+
+support += extrude(Plane(support.faces().sort_by().last) * Circle(10), 30)
+support = fillet(support.edges().sort_by().last, radius = 5)
+
+support.label = "support"
 
 # Base profile
 
@@ -74,8 +81,8 @@ base -= extrude(plateIndent, -sheetDepth)
 
 # Sockets for supports
 
-base -= extrude(Plane(topFace) * Pos(supportOffset, 0) * Circle(supportThreadRadius), -supportThreadDepth - 1)
-base -= extrude(Plane(topFace) * Pos(-supportOffset, 0) * Circle(supportThreadRadius), -supportThreadDepth - 1)
+base -= extrude(Plane(topFace) * Pos(supportOffset, 0) * Circle(supportThreadRadius + threadEps), -supportThreadDepth - 1)
+base -= extrude(Plane(topFace) * Pos(-supportOffset, 0) * Circle(supportThreadRadius + threadEps), -supportThreadDepth - 1)
 
 base += Plane(topFace) * Pos(supportOffset, 0) * Rot(180, 0, 180) * threadSocket
 base += Plane(topFace) * Pos(-supportOffset, 0) * Rot(180, 0, 180) * threadSocket
@@ -87,7 +94,6 @@ balastW = baseW - 2*sheetMargin
 balastH = baseH - 2*sheetMargin
 reinforcementW = 20
 
-bottomFace = base.faces().sort_by().first
 balastSketch = Rectangle(balastW, balastH)
 balastSketch -= [
 	Pos(supportOffset, 0) * Circle(supportThreadRadius * 1.5),
@@ -96,6 +102,7 @@ balastSketch -= [
     Rectangle(reinforcementW, balastH)
 ]
 
+bottomFace = base.faces().sort_by().first
 base -= extrude(Plane(bottomFace) * balastSketch, -balastDepth)
 
 # Feet
@@ -124,10 +131,15 @@ feet = [Pos(vert.X, vert.Y) * foot for vert in feetPos]
 base -= [Pos(vert.X, vert.Y) * scale(footJoint, 1.05) for vert in feetPos]
 base.label = "base"
 
+# Beam
+
+beam = Pos(0, 0, 10) * Box(baseW, 60, 20)
+
 # Final assembly
 
 assem = Compound(children = [
     base,
+    Pos(0, 0, baseThickness + supportHeight) * beam,
     Pos(supportOffset, 0, baseThickness) * support,
     Pos(-supportOffset, 0, baseThickness) * support,
 ] + feet)
