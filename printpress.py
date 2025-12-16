@@ -8,7 +8,7 @@ eps = 0.2
 # Supports
 
 supportRadius = 10
-supportHeight = 130
+supportHeight = 100
 supportThreadRadius = 10
 supportThreadDepth = 30
 threadEps = 0.4
@@ -165,6 +165,7 @@ beam = beamTmp1 & beamTmp2
 beamTopFace = beam.faces().sort_by().last
 beam -= extrude(Plane(beamTopFace) * Pos(supportOffset, 0) * Circle(supportTopRadius + eps), -beamThickness)
 beam -= extrude(Plane(beamTopFace) * Pos(-supportOffset, 0) * Circle(supportTopRadius + eps), -beamThickness)
+beam.label = "beam"
 
 beamPeg = Box(10, supportTopRadius*2 + 20, 6, align=(Align.CENTER, Align.CENTER, Align.MIN))
 beamPeg.label = "beamPeg"
