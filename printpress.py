@@ -33,9 +33,9 @@ shaftRadius = 20
 hingeHeight = 30
 shaftHeight = 100
 
-def make_support_thread(external):
+def make_support_thread(external, eps):
 	return IsoThread(
-		major_diameter=supportThreadRadius * 2 + threadEps * 2,
+		major_diameter=supportThreadRadius * 2 + eps * 2,
 		pitch=8,
 		length=supportThreadDepth,
 		external=external,
@@ -67,7 +67,7 @@ def make_supports():
 
 	# Supports threads
 
-	thread = make_support_thread(external=True)
+	thread = make_support_thread(external=True, eps=0.0)
 	thread = IsoThread(
 		major_diameter=supportThreadRadius * 2,
 		pitch=8,
@@ -144,7 +144,7 @@ def make_base():
 		-supportThreadDepth - 1,
 	)
 
-	threadSocket = make_support_thread(external=False)
+	threadSocket = make_support_thread(external=False, eps=threadEps)
 	base += Plane(topFace) * Pos(supportOffset, 0) * Rot(180, 0, 180) * threadSocket
 	base += Plane(topFace) * Pos(-supportOffset, 0) * Rot(180, 0, 180) * threadSocket
 
@@ -234,6 +234,10 @@ def make_beam():
 		Plane(beamTopFace) * Pos(-supportOffset, 0) * Circle(supportTopRadius + eps),
 		-beamThickness,
 	)
+
+	beam -= Cylinder(radius=shaftRadius + threadEps, height = beamThickness*2)
+	beam += Rot(0, 0, 180) * make_shaft_thread(height=beamThickness, external=False, eps=threadEps)
+
 	beam.label = "beam"
 
 	beamPeg = make_beam_peg()
@@ -269,14 +273,17 @@ def make_shaft_hinge(withEps=False):
 
 	return revolve(make_face(Plane.XZ * sk), axis=Axis.Z)
 
-def make_shaft():
-	thread = IsoThread(
-		major_diameter=shaftRadius * 2,
+def make_shaft_thread(height, external, eps):
+	return IsoThread(
+		major_diameter=shaftRadius * 2 + eps * 2,
 		pitch=10,
-		length=shaftHeight,
-		external=True,
+		length=height,
+		external=external,
 		end_finishes=("square", "square"),
 	)
+
+def make_shaft():
+	thread = make_shaft_thread(height=shaftHeight, external=True, eps=0.0)
 	thread += Cylinder(
 		radius=thread.min_radius,
 		height=shaftHeight,
@@ -287,6 +294,7 @@ def make_shaft():
 	hinge = make_shaft_hinge()
 
 	shaft = Pos(0, 0, hingeHeight + shaftHeight) * joint + Pos(0, 0, hingeHeight) * thread + hinge
+	shaft.label = "shaft"
 
 	return [Pos(0, 0, baseThickness) * shaft]
 
@@ -305,6 +313,8 @@ def make_press():
 	hinge = make_shaft_hinge(withEps=True)
 	hinge += extrude(hinge.faces().sort_by().first, 50)
 	plate -= hinge
+
+	plate.label = "plate"
 
 	return [Pos(0, 0, baseThickness) * plate]
 
