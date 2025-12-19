@@ -60,7 +60,7 @@ def make_supports():
 	support = Solid.extrude_linear_with_rotation(
 		supportSketch, (0, 0), (0, 0, supportHeight), 3 * 180
 	)
-	# support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
+	support = fillet(support.edges().group_by(Axis.Z)[1], radius=1)
 
 	# Supports threads
 
@@ -93,8 +93,6 @@ def make_supports():
 		Pos(supportOffset, 0, baseThickness) * support,
 		Pos(-supportOffset, 0, baseThickness) * support,
 	]
-
-
 
 
 def make_base():
