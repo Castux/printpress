@@ -55,6 +55,7 @@ def make_supports():
     supportSketch += Pos(-0.8 * supportRadius, 0, 0) * Circle(supportRadius)
     supportSketch += Pos(0, 0.8 * supportRadius, 0) * Circle(supportRadius / 3)
     supportSketch += Pos(0, -0.8 * supportRadius, 0) * Circle(supportRadius / 3)
+    supportSketch = Rot(0, 0, 90) * supportSketch
 
     support = Solid.extrude_linear_with_rotation(
         supportSketch, (0, 0), (0, 0, supportHeight), 3 * 180
