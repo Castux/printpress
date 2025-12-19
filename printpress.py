@@ -31,7 +31,7 @@ beamThickness = 20
 
 shaftRadius = 20
 hingeHeight = 30
-shaftHeight = 100
+shaftHeight = 105
 
 def make_support_thread(external, eps):
 	return IsoThread(
@@ -167,7 +167,7 @@ def make_base():
 	base -= extrude(Plane(bottomFace) * balastSketch, -balastDepth)
 	base.label = "base"
 
-	return base
+	return [base]
 
 
 def make_feet(base):
@@ -251,7 +251,7 @@ def make_beam():
 
 def make_shaft_joint(withEps=False):
 	margin = eps if withEps else 0.0
-	return Box(shaftRadius + 2*margin, shaftRadius + 2*margin, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
+	return Box(shaftRadius + 2*margin, shaftRadius + 2*margin, 10 + margin, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
 def make_shaft_hinge(withEps=False):
 	emptyThickness = 5
@@ -318,17 +318,49 @@ def make_press():
 
 	return [Pos(0, 0, baseThickness) * plate]
 
+def make_handle():
+	handleHeight = 20
+	handleRadius = 80
+
+	handle = Cylinder(
+		radius=shaftRadius,
+		height=handleHeight,
+		align = (Align.CENTER, Align.CENTER, Align.MIN)
+	)
+	handle += extrude(Plane(handle.faces().sort_by().last) * Circle(shaftRadius - 5), amount = 5, taper=45)
+	handle = fillet(handle.edges().group_by()[-3:], radius = 2.5)
+
+	arm = Cylinder(
+		radius=6,
+		height=handleRadius,
+		align=(Align.CENTER, Align.CENTER, Align.MIN),
+		rotation=(90, 0, 0)
+	)
+	arm += Pos(0, -handleRadius, 0) * Sphere(radius=handleHeight/2)
+
+	arms = Solid()
+	for angle in range(0, 360, 120):
+		arms += Pos(0, 0, handleHeight/2) * Rot(0, 0, angle) * arm
+	handle += arms
+
+	handle.position -= (0, 0, 5)
+	handle -= Box(200, 200, 200, align=(Align.CENTER, Align.CENTER, Align.MAX))
+	handle -= make_shaft_joint(withEps=True)
+	handle.label = "handle"
+
+	return [Pos(0, 0, baseThickness + hingeHeight + shaftHeight) * handle]
+
 # Final assembly
 
 parts = []
 
 parts += make_supports()
-base = make_base()
-parts.append(base)
-parts += make_feet(base)
+parts += make_base()
+parts += make_feet(parts[-1])
 parts += make_beam()
 parts += make_shaft()
 parts += make_press()
+parts += make_handle()
 
 assem = Compound(children=parts)
 show(assem)
