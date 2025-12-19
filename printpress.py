@@ -247,19 +247,25 @@ def make_beam():
 
 def make_shaft_joint(withEps=False):
 	margin = eps if withEps else 0.0
-	return Box(shaftRadius + 2*eps, shaftRadius + 2*eps, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
+	return Box(shaftRadius + 2*margin, shaftRadius + 2*margin, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
-def make_shaft_hinge():
+def make_shaft_hinge(withEps=False):
 	emptyThickness = 5
-	innerRadius = 12
 	dy = hingeHeight / 4
 
-	sk = Line((0, emptyThickness), (shaftRadius, emptyThickness))
+	radius = shaftRadius
+	innerRadius = 12
+
+	if withEps:
+		radius += eps
+		innerRadius += eps
+
+	sk = Line((0, emptyThickness), (radius, emptyThickness))
 	sk += Line(sk @ 1, sk @ 1 + (0, dy - emptyThickness))
-	sk += Line(sk @ 1, sk @ 1 + (-(shaftRadius-innerRadius), dy))
+	sk += Line(sk @ 1, sk @ 1 + (-(radius-innerRadius), dy))
 	sk += Line(sk @ 1, sk @ 1 + (0, dy))
-	sk += Line(sk @ 1, sk @ 1 + (shaftRadius-innerRadius, dy))
-	sk += Line(sk @ 1, sk @ 1 + (-shaftRadius, 0))
+	sk += Line(sk @ 1, sk @ 1 + (radius-innerRadius, dy))
+	sk += Line(sk @ 1, sk @ 1 + (-radius, 0))
 
 	return revolve(make_face(Plane.XZ * sk), axis=Axis.Z)
 
