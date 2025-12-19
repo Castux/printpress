@@ -30,8 +30,8 @@ supportTopHeight = 32
 beamThickness = 20
 
 shaftRadius = 20
-hingeHeight = 40
-shaftHeight = 160
+hingeHeight = 30
+shaftHeight = 100
 
 def make_support_thread(external):
 	return IsoThread(
@@ -288,19 +288,37 @@ def make_shaft():
 
 	shaft = Pos(0, 0, hingeHeight + shaftHeight) * joint + Pos(0, 0, hingeHeight) * thread + hinge
 
-	return [shaft]
+	return [Pos(0, 0, baseThickness) * shaft]
+
+def make_press():
+
+	straightThickness = 5
+
+	plate = Box(sheetW, sheetH, straightThickness, align=(Align.CENTER, Align.CENTER, Align.MIN))
+	plate += extrude(
+		Plane(plate.faces().sort_by().last) * Rectangle(sheetW - 20, sheetH - 20),
+		amount=hingeHeight - straightThickness,
+		taper=45
+	)
+	plate = fillet(plate.edges().group_by()[-3:], radius=straightThickness-1)
+
+	hinge = make_shaft_hinge(withEps=True)
+	hinge += extrude(hinge.faces().sort_by().first, 50)
+	plate -= hinge
+
+	return [Pos(0, 0, baseThickness) * plate]
 
 # Final assembly
 
 parts = []
 
-# parts += make_supports()
-# base = make_base()
-# parts.append(base)
-# parts += make_feet(base)
-# parts += make_beam()
-
+parts += make_supports()
+base = make_base()
+parts.append(base)
+parts += make_feet(base)
+parts += make_beam()
 parts += make_shaft()
+parts += make_press()
 
 assem = Compound(children=parts)
 show(assem)
