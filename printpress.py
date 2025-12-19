@@ -31,8 +31,9 @@ beamThickness = 20
 def make_support_thread(external):
 	return IsoThread(major_diameter = supportThreadRadius * 2 + threadEps * 2, pitch = 8, length = supportThreadDepth, external = external, end_finishes=("square", "chamfer"))
 
-def make_beam_peg():
-	return Box(10, supportTopRadius*2 + 20, 6, align=(Align.CENTER, Align.CENTER, Align.MIN))
+def make_beam_peg(withEps = False):
+	margin = eps if withEps else 0.0
+	return Box(10 + 2 * margin, supportTopRadius*2 + 20, 6 + 2 * margin, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
 def make_supports():
 	supportSketch = Pos(0.8 * supportRadius, 0, 0) * Circle(supportRadius)
@@ -54,7 +55,7 @@ def make_supports():
 
 	support += extrude(Plane(support.faces().sort_by().last) * Circle(supportTopRadius), supportTopHeight)
 	support = fillet(support.edges().sort_by().last, radius = 2)
-	support -= Pos(0, 0, supportHeight + beamThickness) * scale(make_beam_peg(), 1.05)
+	support -= Pos(0, 0, supportHeight + beamThickness) * make_beam_peg(withEps = True)
 
 	support.label = "support"
 	return [
@@ -138,8 +139,6 @@ def make_feet(base):
 	footProfile = Pos(0, -footH) * footProfile
 
 	foot = revolve(make_face(Plane.XZ * footProfile), axis=Axis.Z)
-	footJoint = extrude(Plane(foot.faces().sort_by().last) * Rectangle(15, 15), 10)
-	foot += footJoint
 	foot.label = "foot"
 
 	feetPosLeft = base.faces().sort_by().first.vertices().group_by(Axis.X)[1].sort_by(Axis.Y)
@@ -147,7 +146,6 @@ def make_feet(base):
 	feetPos = [feetPosLeft.first, feetPosLeft.last, feetPosRight.first, feetPosRight.last]
 
 	feet = [Pos(vert.X, vert.Y) * foot for vert in feetPos]
-	base -= [Pos(vert.X, vert.Y) * scale(footJoint, 1.05) for vert in feetPos]
 
 	return feet
 
