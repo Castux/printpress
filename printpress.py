@@ -4,6 +4,7 @@ from ocp_vscode import *
 
 set_defaults(reset_camera=Camera.CENTER, helper_scale=5)
 
+hCenter = (Align.CENTER, Align.CENTER, Align.MIN)
 eps = 0.2
 
 supportRadius = 10
@@ -50,7 +51,7 @@ def make_beam_peg(withEps=False):
 		10 + 2 * margin,
 		supportTopRadius * 2 + 20,
 		6 + 2 * margin,
-		align=(Align.CENTER, Align.CENTER, Align.MIN),
+		align=hCenter,
 	)
 
 
@@ -79,7 +80,7 @@ def make_supports():
 	thread += Cylinder(
 		radius=thread.min_radius,
 		height=supportThreadDepth,
-		align=(Align.CENTER, Align.CENTER, Align.MIN),
+		align=hCenter,
 	)
 	support += Rot(180, 0, 0) * thread
 
@@ -258,7 +259,7 @@ def make_shaft_joint(withEps=False):
 		shaftRadius + 2 * margin,
 		shaftRadius + 2 * margin,
 		10 + margin,
-		align=(Align.CENTER, Align.CENTER, Align.MIN),
+		align=hCenter,
 	)
 
 
@@ -298,7 +299,7 @@ def make_shaft():
 	thread += Cylinder(
 		radius=thread.min_radius,
 		height=shaftHeight,
-		align=(Align.CENTER, Align.CENTER, Align.MIN),
+		align=hCenter,
 	)
 
 	joint = make_shaft_joint()
@@ -318,7 +319,7 @@ def make_press():
 	straightThickness = 5
 
 	plate = Box(
-		sheetW, sheetH, straightThickness, align=(Align.CENTER, Align.CENTER, Align.MIN)
+		sheetW, sheetH, straightThickness, align=hCenter
 	)
 	plate += extrude(
 		Plane(plate.faces().sort_by().last) * Rectangle(sheetW - 20, sheetH - 20),
@@ -343,7 +344,7 @@ def make_handle():
 	handle = Cylinder(
 		radius=shaftRadius,
 		height=handleHeight,
-		align=(Align.CENTER, Align.CENTER, Align.MIN),
+		align=hCenter,
 	)
 	handle += extrude(
 		Plane(handle.faces().sort_by().last) * Circle(shaftRadius - 5),
@@ -355,7 +356,7 @@ def make_handle():
 	arm = Cylinder(
 		radius=6,
 		height=handleRadius,
-		align=(Align.CENTER, Align.CENTER, Align.MIN),
+		align=hCenter,
 		rotation=(90, 0, 0),
 	)
 	arm += Pos(0, -handleRadius, 0) * Sphere(radius=handleHeight / 2)
