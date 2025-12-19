@@ -33,6 +33,7 @@ shaftRadius = 20
 hingeHeight = 30
 shaftHeight = 105
 
+
 def make_support_thread(external, eps):
 	return IsoThread(
 		major_diameter=supportThreadRadius * 2 + eps * 2,
@@ -99,7 +100,6 @@ def make_supports():
 
 
 def make_base():
-
 	def baseProfile(baseH=40, baseW=120):
 		short = baseH / 9
 		tall = baseH * 3 / 9
@@ -235,8 +235,10 @@ def make_beam():
 		-beamThickness,
 	)
 
-	beam -= Cylinder(radius=shaftRadius + threadEps, height = beamThickness*2)
-	beam += Rot(0, 0, 180) * make_shaft_thread(height=beamThickness, external=False, eps=threadEps)
+	beam -= Cylinder(radius=shaftRadius + threadEps, height=beamThickness * 2)
+	beam += Rot(0, 0, 180) * make_shaft_thread(
+		height=beamThickness, external=False, eps=threadEps
+	)
 
 	beam.label = "beam"
 
@@ -249,9 +251,16 @@ def make_beam():
 		Pos(-supportOffset, 0, baseThickness + supportHeight + beamThickness) * beamPeg,
 	]
 
+
 def make_shaft_joint(withEps=False):
 	margin = eps if withEps else 0.0
-	return Box(shaftRadius + 2*margin, shaftRadius + 2*margin, 10 + margin, align=(Align.CENTER, Align.CENTER, Align.MIN))
+	return Box(
+		shaftRadius + 2 * margin,
+		shaftRadius + 2 * margin,
+		10 + margin,
+		align=(Align.CENTER, Align.CENTER, Align.MIN),
+	)
+
 
 def make_shaft_hinge(withEps=False):
 	emptyThickness = 5
@@ -266,12 +275,13 @@ def make_shaft_hinge(withEps=False):
 
 	sk = Line((0, emptyThickness), (radius, emptyThickness))
 	sk += Line(sk @ 1, sk @ 1 + (0, dy - emptyThickness))
-	sk += Line(sk @ 1, sk @ 1 + (-(radius-innerRadius), dy))
+	sk += Line(sk @ 1, sk @ 1 + (-(radius - innerRadius), dy))
 	sk += Line(sk @ 1, sk @ 1 + (0, dy))
-	sk += Line(sk @ 1, sk @ 1 + (radius-innerRadius, dy))
+	sk += Line(sk @ 1, sk @ 1 + (radius - innerRadius, dy))
 	sk += Line(sk @ 1, sk @ 1 + (-radius, 0))
 
 	return revolve(make_face(Plane.XZ * sk), axis=Axis.Z)
+
 
 def make_shaft_thread(height, external, eps):
 	return IsoThread(
@@ -281,6 +291,7 @@ def make_shaft_thread(height, external, eps):
 		external=external,
 		end_finishes=("square", "square"),
 	)
+
 
 def make_shaft():
 	thread = make_shaft_thread(height=shaftHeight, external=True, eps=0.0)
@@ -293,22 +304,28 @@ def make_shaft():
 	joint = make_shaft_joint()
 	hinge = make_shaft_hinge()
 
-	shaft = Pos(0, 0, hingeHeight + shaftHeight) * joint + Pos(0, 0, hingeHeight) * thread + hinge
+	shaft = (
+		Pos(0, 0, hingeHeight + shaftHeight) * joint
+		+ Pos(0, 0, hingeHeight) * thread
+		+ hinge
+	)
 	shaft.label = "shaft"
 
 	return [Pos(0, 0, baseThickness) * shaft]
 
-def make_press():
 
+def make_press():
 	straightThickness = 5
 
-	plate = Box(sheetW, sheetH, straightThickness, align=(Align.CENTER, Align.CENTER, Align.MIN))
+	plate = Box(
+		sheetW, sheetH, straightThickness, align=(Align.CENTER, Align.CENTER, Align.MIN)
+	)
 	plate += extrude(
 		Plane(plate.faces().sort_by().last) * Rectangle(sheetW - 20, sheetH - 20),
 		amount=hingeHeight - straightThickness,
-		taper=45
+		taper=45,
 	)
-	plate = fillet(plate.edges().group_by()[-3:], radius=straightThickness-1)
+	plate = fillet(plate.edges().group_by()[-3:], radius=straightThickness - 1)
 
 	hinge = make_shaft_hinge(withEps=True)
 	hinge += extrude(hinge.faces().sort_by().first, 50)
@@ -318,6 +335,7 @@ def make_press():
 
 	return [Pos(0, 0, baseThickness) * plate]
 
+
 def make_handle():
 	handleHeight = 20
 	handleRadius = 80
@@ -325,22 +343,26 @@ def make_handle():
 	handle = Cylinder(
 		radius=shaftRadius,
 		height=handleHeight,
-		align = (Align.CENTER, Align.CENTER, Align.MIN)
+		align=(Align.CENTER, Align.CENTER, Align.MIN),
 	)
-	handle += extrude(Plane(handle.faces().sort_by().last) * Circle(shaftRadius - 5), amount = 5, taper=45)
-	handle = fillet(handle.edges().group_by()[-3:], radius = 2.5)
+	handle += extrude(
+		Plane(handle.faces().sort_by().last) * Circle(shaftRadius - 5),
+		amount=5,
+		taper=45,
+	)
+	handle = fillet(handle.edges().group_by()[-3:], radius=2.5)
 
 	arm = Cylinder(
 		radius=6,
 		height=handleRadius,
 		align=(Align.CENTER, Align.CENTER, Align.MIN),
-		rotation=(90, 0, 0)
+		rotation=(90, 0, 0),
 	)
-	arm += Pos(0, -handleRadius, 0) * Sphere(radius=handleHeight/2)
+	arm += Pos(0, -handleRadius, 0) * Sphere(radius=handleHeight / 2)
 
 	arms = Solid()
 	for angle in range(0, 360, 120):
-		arms += Pos(0, 0, handleHeight/2) * Rot(0, 0, angle) * arm
+		arms += Pos(0, 0, handleHeight / 2) * Rot(0, 0, angle) * arm
 	handle += arms
 
 	handle.position -= (0, 0, 5)
@@ -349,6 +371,7 @@ def make_handle():
 	handle.label = "handle"
 
 	return [Pos(0, 0, baseThickness + hingeHeight + shaftHeight) * handle]
+
 
 # Final assembly
 
