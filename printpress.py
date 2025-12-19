@@ -31,218 +31,218 @@ beamThickness = 20
 
 
 def make_support_thread(external):
-    return IsoThread(
-        major_diameter=supportThreadRadius * 2 + threadEps * 2,
-        pitch=8,
-        length=supportThreadDepth,
-        external=external,
-        end_finishes=("square", "chamfer"),
-    )
+	return IsoThread(
+		major_diameter=supportThreadRadius * 2 + threadEps * 2,
+		pitch=8,
+		length=supportThreadDepth,
+		external=external,
+		end_finishes=("square", "chamfer"),
+	)
 
 
 def make_beam_peg(withEps=False):
-    margin = eps if withEps else 0.0
-    return Box(
-        10 + 2 * margin,
-        supportTopRadius * 2 + 20,
-        6 + 2 * margin,
-        align=(Align.CENTER, Align.CENTER, Align.MIN),
-    )
+	margin = eps if withEps else 0.0
+	return Box(
+		10 + 2 * margin,
+		supportTopRadius * 2 + 20,
+		6 + 2 * margin,
+		align=(Align.CENTER, Align.CENTER, Align.MIN),
+	)
 
 
 def make_supports():
-    supportSketch = Pos(0.8 * supportRadius, 0, 0) * Circle(supportRadius)
-    supportSketch += Pos(-0.8 * supportRadius, 0, 0) * Circle(supportRadius)
-    supportSketch += Pos(0, 0.8 * supportRadius, 0) * Circle(supportRadius / 3)
-    supportSketch += Pos(0, -0.8 * supportRadius, 0) * Circle(supportRadius / 3)
-    supportSketch = Rot(0, 0, 90) * supportSketch
+	supportSketch = Pos(0.8 * supportRadius, 0, 0) * Circle(supportRadius)
+	supportSketch += Pos(-0.8 * supportRadius, 0, 0) * Circle(supportRadius)
+	supportSketch += Pos(0, 0.8 * supportRadius, 0) * Circle(supportRadius / 3)
+	supportSketch += Pos(0, -0.8 * supportRadius, 0) * Circle(supportRadius / 3)
+	supportSketch = Rot(0, 0, 90) * supportSketch
 
-    support = Solid.extrude_linear_with_rotation(
-        supportSketch, (0, 0), (0, 0, supportHeight), 3 * 180
-    )
-    # support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
+	support = Solid.extrude_linear_with_rotation(
+		supportSketch, (0, 0), (0, 0, supportHeight), 3 * 180
+	)
+	# support = fillet(support.edges().group_by(Axis.Z)[1], radius=0.5)
 
-    # Supports threads
+	# Supports threads
 
-    thread = make_support_thread(external=True)
-    thread = IsoThread(
-        major_diameter=supportThreadRadius * 2,
-        pitch=8,
-        length=supportThreadDepth,
-        external=True,
-        end_finishes=("square", "chamfer"),
-    )
-    thread += Cylinder(
-        radius=thread.min_radius,
-        height=supportThreadDepth,
-        align=(Align.CENTER, Align.CENTER, Align.MIN),
-    )
-    support += Rot(180, 0, 0) * thread
+	thread = make_support_thread(external=True)
+	thread = IsoThread(
+		major_diameter=supportThreadRadius * 2,
+		pitch=8,
+		length=supportThreadDepth,
+		external=True,
+		end_finishes=("square", "chamfer"),
+	)
+	thread += Cylinder(
+		radius=thread.min_radius,
+		height=supportThreadDepth,
+		align=(Align.CENTER, Align.CENTER, Align.MIN),
+	)
+	support += Rot(180, 0, 0) * thread
 
-    # Support top
+	# Support top
 
-    support += extrude(
-        Plane(support.faces().sort_by().last) * Circle(supportTopRadius),
-        supportTopHeight,
-    )
-    support = fillet(support.edges().sort_by().last, radius=2)
-    support -= Pos(0, 0, supportHeight + beamThickness) * make_beam_peg(withEps=True)
+	support += extrude(
+		Plane(support.faces().sort_by().last) * Circle(supportTopRadius),
+		supportTopHeight,
+	)
+	support = fillet(support.edges().sort_by().last, radius=2)
+	support -= Pos(0, 0, supportHeight + beamThickness) * make_beam_peg(withEps=True)
 
-    support.label = "support"
-    return [
-        Pos(supportOffset, 0, baseThickness) * support,
-        Pos(-supportOffset, 0, baseThickness) * support,
-    ]
+	support.label = "support"
+	return [
+		Pos(supportOffset, 0, baseThickness) * support,
+		Pos(-supportOffset, 0, baseThickness) * support,
+	]
 
 
-def baseProfile(baseH=40, baseW=120):
-    short = baseH / 9
-    tall = baseH * 3 / 9
-
-    ln = Line((0, baseH), (baseW / 2, baseH))
-    ln += Line(ln @ 1, ln @ 1 + (0, -short))
-    ln += Line(ln @ 1, ln @ 1 + (2, 0))
-    ln += RadiusArc(ln @ 1, ln @ 1 + (4, -tall), -tall)
-    ln += Line(ln @ 1, ln @ 1 + (0, -short))
-    ln += RadiusArc(ln @ 1, ln @ 1 + (4, -tall), tall)
-    ln += Line(ln @ 1, ln @ 1 + (3, 0))
-    ln += Line(ln @ 1, ln @ 1 + (0, -short))
-    ln += Line(ln @ 1, (0, 0))
-    ln += mirror(ln, Plane.YZ)
-
-    return ln
 
 
 def make_base():
-    tmp1 = make_face(Plane.XZ.offset(baseH) * baseProfile(baseThickness, baseW))
-    tmp1 = extrude(tmp1, baseH * 2)
-    tmp2 = make_face(Plane.YZ.offset(baseW) * baseProfile(baseThickness, baseH))
-    tmp2 = extrude(tmp2, baseW * 2)
 
-    base = tmp1 & tmp2
+	def baseProfile(baseH=40, baseW=120):
+		short = baseH / 9
+		tall = baseH * 3 / 9
 
-    topFace = base.faces().sort_by().last
+		ln = Line((0, baseH), (baseW / 2, baseH))
+		ln += Line(ln @ 1, ln @ 1 + (0, -short))
+		ln += Line(ln @ 1, ln @ 1 + (2, 0))
+		ln += RadiusArc(ln @ 1, ln @ 1 + (4, -tall), -tall)
+		ln += Line(ln @ 1, ln @ 1 + (0, -short))
+		ln += RadiusArc(ln @ 1, ln @ 1 + (4, -tall), tall)
+		ln += Line(ln @ 1, ln @ 1 + (3, 0))
+		ln += Line(ln @ 1, ln @ 1 + (0, -short))
+		ln += Line(ln @ 1, (0, 0))
+		ln += mirror(ln, Plane.YZ)
 
-    plateIndent = Plane(topFace) * Rectangle(sheetW, sheetH)
-    base -= extrude(plateIndent, -sheetDepth)
+		return ln
 
-    # Sockets for supports
+	tmp1 = make_face(Plane.XZ.offset(baseH) * baseProfile(baseThickness, baseW))
+	tmp1 = extrude(tmp1, baseH * 2)
+	tmp2 = make_face(Plane.YZ.offset(baseW) * baseProfile(baseThickness, baseH))
+	tmp2 = extrude(tmp2, baseW * 2)
 
-    base -= extrude(
-        Plane(topFace)
-        * Pos(supportOffset, 0)
-        * Circle(supportThreadRadius + threadEps),
-        -supportThreadDepth - 1,
-    )
-    base -= extrude(
-        Plane(topFace)
-        * Pos(-supportOffset, 0)
-        * Circle(supportThreadRadius + threadEps),
-        -supportThreadDepth - 1,
-    )
+	base = tmp1 & tmp2
 
-    threadSocket = make_support_thread(external=False)
-    base += Plane(topFace) * Pos(supportOffset, 0) * Rot(180, 0, 180) * threadSocket
-    base += Plane(topFace) * Pos(-supportOffset, 0) * Rot(180, 0, 180) * threadSocket
+	topFace = base.faces().sort_by().last
 
-    # Cavity under ("balast" will be filled with rice or something :D)
+	plateIndent = Plane(topFace) * Rectangle(sheetW, sheetH)
+	base -= extrude(plateIndent, -sheetDepth)
 
-    balastDepth = 25
-    balastW = baseW - 2 * sheetMargin
-    balastH = baseH - 2 * sheetMargin
-    reinforcementW = 20
+	# Sockets for supports
 
-    balastSketch = Rectangle(balastW, balastH)
-    balastSketch -= [
-        Pos(supportOffset, 0) * Circle(supportThreadRadius * 1.5),
-        Pos(-supportOffset, 0) * Circle(supportThreadRadius * 1.5),
-        Rectangle(balastW, reinforcementW),
-        Rectangle(reinforcementW, balastH),
-    ]
+	base -= extrude(
+		Plane(topFace)
+		* Pos(supportOffset, 0)
+		* Circle(supportThreadRadius + threadEps),
+		-supportThreadDepth - 1,
+	)
+	base -= extrude(
+		Plane(topFace)
+		* Pos(-supportOffset, 0)
+		* Circle(supportThreadRadius + threadEps),
+		-supportThreadDepth - 1,
+	)
 
-    bottomFace = base.faces().sort_by().first
-    base -= extrude(Plane(bottomFace) * balastSketch, -balastDepth)
-    base.label = "base"
+	threadSocket = make_support_thread(external=False)
+	base += Plane(topFace) * Pos(supportOffset, 0) * Rot(180, 0, 180) * threadSocket
+	base += Plane(topFace) * Pos(-supportOffset, 0) * Rot(180, 0, 180) * threadSocket
 
-    return base
+	# Cavity under ("balast" will be filled with rice or something :D)
+
+	balastDepth = 25
+	balastW = baseW - 2 * sheetMargin
+	balastH = baseH - 2 * sheetMargin
+	reinforcementW = 20
+
+	balastSketch = Rectangle(balastW, balastH)
+	balastSketch -= [
+		Pos(supportOffset, 0) * Circle(supportThreadRadius * 1.5),
+		Pos(-supportOffset, 0) * Circle(supportThreadRadius * 1.5),
+		Rectangle(balastW, reinforcementW),
+		Rectangle(reinforcementW, balastH),
+	]
+
+	bottomFace = base.faces().sort_by().first
+	base -= extrude(Plane(bottomFace) * balastSketch, -balastDepth)
+	base.label = "base"
+
+	return base
 
 
 def make_feet(base):
-    footH = 30
+	footH = 30
 
-    footProfile = Line((0, footH), (10, footH))
-    footProfile += SagittaArc(footProfile @ 1, footProfile @ 1 + (0, -5), 1)
-    footProfile += EllipticalCenterArc(
-        footProfile @ 1 + (0, -5), 12, 5, start_angle=-90, end_angle=90
-    )
-    footProfile += RadiusArc(footProfile @ 1, (4, 0), 15)
-    footProfile += Line(footProfile @ 1, (0, 0))
+	footProfile = Line((0, footH), (10, footH))
+	footProfile += SagittaArc(footProfile @ 1, footProfile @ 1 + (0, -5), 1)
+	footProfile += EllipticalCenterArc(
+		footProfile @ 1 + (0, -5), 12, 5, start_angle=-90, end_angle=90
+	)
+	footProfile += RadiusArc(footProfile @ 1, (4, 0), 15)
+	footProfile += Line(footProfile @ 1, (0, 0))
 
-    footProfile = Pos(0, -footH) * footProfile
+	footProfile = Pos(0, -footH) * footProfile
 
-    foot = revolve(make_face(Plane.XZ * footProfile), axis=Axis.Z)
-    foot.label = "foot"
+	foot = revolve(make_face(Plane.XZ * footProfile), axis=Axis.Z)
+	foot.label = "foot"
 
-    feetPosLeft = (
-        base.faces().sort_by().first.vertices().group_by(Axis.X)[1].sort_by(Axis.Y)
-    )
-    feetPosRight = (
-        base.faces().sort_by().first.vertices().group_by(Axis.X)[-2].sort_by(Axis.Y)
-    )
-    feetPos = [
-        feetPosLeft.first,
-        feetPosLeft.last,
-        feetPosRight.first,
-        feetPosRight.last,
-    ]
+	baseBottomVertices = base.faces().sort_by().first.vertices().group_by(Axis.X)
+	feetPosLeft = baseBottomVertices[1].sort_by(Axis.Y)
+	feetPosRight = baseBottomVertices[-2].sort_by(Axis.Y)
 
-    feet = [Pos(vert.X, vert.Y) * foot for vert in feetPos]
+	feetPos = [
+		feetPosLeft.first,
+		feetPosLeft.last,
+		feetPosRight.first,
+		feetPosRight.last,
+	]
 
-    return feet
+	feet = [Pos(vert.X, vert.Y) * foot for vert in feetPos]
+
+	return feet
 
 
 def make_beam():
-    def beamProfile(w):
-        h = beamThickness
-        ln = Line((0, h), (w / 2 + 8, h))
-        ln += Line(ln @ 1, ln @ 1 + (0, -4))
-        ln += Line(ln @ 1, ln @ 1 + (-4, 0))
-        ln += RadiusArc(ln @ 1, ln @ 1 + (-4, -12), 12)
-        ln += Line(ln @ 1, ln @ 1 + (0, -4))
-        ln += Line(ln @ 1, (0, 0))
-        ln += mirror(ln, Plane.YZ)
+	def beamProfile(w):
+		h = beamThickness
+		ln = Line((0, h), (w / 2 + 8, h))
+		ln += Line(ln @ 1, ln @ 1 + (0, -4))
+		ln += Line(ln @ 1, ln @ 1 + (-4, 0))
+		ln += RadiusArc(ln @ 1, ln @ 1 + (-4, -12), 12)
+		ln += Line(ln @ 1, ln @ 1 + (0, -4))
+		ln += Line(ln @ 1, (0, 0))
+		ln += mirror(ln, Plane.YZ)
 
-        return ln
+		return ln
 
-    beamW = baseW
-    beamH = 60
+	beamW = baseW
+	beamH = 60
 
-    beamTmp1 = make_face(Plane.XZ.offset(beamH) * beamProfile(beamW))
-    beamTmp1 = extrude(beamTmp1, beamH * 2)
-    beamTmp2 = make_face(Plane.YZ.offset(beamW) * beamProfile(beamH))
-    beamTmp2 = extrude(beamTmp2, baseW * 2)
+	beamTmp1 = make_face(Plane.XZ.offset(beamH) * beamProfile(beamW))
+	beamTmp1 = extrude(beamTmp1, beamH * 2)
+	beamTmp2 = make_face(Plane.YZ.offset(beamW) * beamProfile(beamH))
+	beamTmp2 = extrude(beamTmp2, baseW * 2)
 
-    beam = beamTmp1 & beamTmp2
+	beam = beamTmp1 & beamTmp2
 
-    beamTopFace = beam.faces().sort_by().last
-    beam -= extrude(
-        Plane(beamTopFace) * Pos(supportOffset, 0) * Circle(supportTopRadius + eps),
-        -beamThickness,
-    )
-    beam -= extrude(
-        Plane(beamTopFace) * Pos(-supportOffset, 0) * Circle(supportTopRadius + eps),
-        -beamThickness,
-    )
-    beam.label = "beam"
+	beamTopFace = beam.faces().sort_by().last
+	beam -= extrude(
+		Plane(beamTopFace) * Pos(supportOffset, 0) * Circle(supportTopRadius + eps),
+		-beamThickness,
+	)
+	beam -= extrude(
+		Plane(beamTopFace) * Pos(-supportOffset, 0) * Circle(supportTopRadius + eps),
+		-beamThickness,
+	)
+	beam.label = "beam"
 
-    beamPeg = make_beam_peg()
-    beamPeg.label = "beamPeg"
+	beamPeg = make_beam_peg()
+	beamPeg.label = "beamPeg"
 
-    return [
-        Pos(0, 0, baseThickness + supportHeight) * beam,
-        Pos(supportOffset, 0, baseThickness + supportHeight + beamThickness) * beamPeg,
-        Pos(-supportOffset, 0, baseThickness + supportHeight + beamThickness) * beamPeg,
-    ]
+	return [
+		Pos(0, 0, baseThickness + supportHeight) * beam,
+		Pos(supportOffset, 0, baseThickness + supportHeight + beamThickness) * beamPeg,
+		Pos(-supportOffset, 0, baseThickness + supportHeight + beamThickness) * beamPeg,
+	]
 
 
 # Final assembly
