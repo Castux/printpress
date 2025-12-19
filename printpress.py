@@ -29,6 +29,9 @@ supportTopHeight = 32
 
 beamThickness = 20
 
+shaftRadius = 20
+hingeHeight = 40
+shaftHeight = 160
 
 def make_support_thread(external):
 	return IsoThread(
@@ -242,16 +245,56 @@ def make_beam():
 		Pos(-supportOffset, 0, baseThickness + supportHeight + beamThickness) * beamPeg,
 	]
 
+def make_shaft_joint(withEps=False):
+	margin = eps if withEps else 0.0
+	return Box(shaftRadius + 2*eps, shaftRadius + 2*eps, 10, align=(Align.CENTER, Align.CENTER, Align.MIN))
+
+def make_shaft_hinge():
+	emptyThickness = 5
+	innerRadius = 12
+	dy = hingeHeight / 4
+
+	sk = Line((0, emptyThickness), (shaftRadius, emptyThickness))
+	sk += Line(sk @ 1, sk @ 1 + (0, dy - emptyThickness))
+	sk += Line(sk @ 1, sk @ 1 + (-(shaftRadius-innerRadius), dy))
+	sk += Line(sk @ 1, sk @ 1 + (0, dy))
+	sk += Line(sk @ 1, sk @ 1 + (shaftRadius-innerRadius, dy))
+	sk += Line(sk @ 1, sk @ 1 + (-shaftRadius, 0))
+
+	return revolve(make_face(Plane.XZ * sk), axis=Axis.Z)
+
+def make_shaft():
+	thread = IsoThread(
+		major_diameter=shaftRadius * 2,
+		pitch=10,
+		length=shaftHeight,
+		external=True,
+		end_finishes=("square", "square"),
+	)
+	thread += Cylinder(
+		radius=thread.min_radius,
+		height=shaftHeight,
+		align=(Align.CENTER, Align.CENTER, Align.MIN),
+	)
+
+	joint = make_shaft_joint()
+	hinge = make_shaft_hinge()
+
+	shaft = Pos(0, 0, hingeHeight + shaftHeight) * joint + Pos(0, 0, hingeHeight) * thread + hinge
+
+	return [shaft]
 
 # Final assembly
 
 parts = []
 
-parts += make_supports()
-base = make_base()
-parts.append(base)
-parts += make_feet(base)
-parts += make_beam()
+# parts += make_supports()
+# base = make_base()
+# parts.append(base)
+# parts += make_feet(base)
+# parts += make_beam()
+
+parts += make_shaft()
 
 assem = Compound(children=parts)
 show(assem)
