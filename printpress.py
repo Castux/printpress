@@ -377,6 +377,15 @@ def make_handle():
 
 	return [Pos(0, 0, baseThickness + hingeHeight + shaftHeight) * handle]
 
+def make_sheet():
+	margin = 10
+	sheet = Box(sheetW - 2 * eps, sheetH - 2 * eps, sheetDepth - eps, align=hCenter)
+
+	sk = Rectangle(sheetW - 2 * margin, sheetH - 2 * margin)
+	sheet -= extrude(Plane(sheet.faces().sort_by().last) * sk, amount= -8)
+	sheet.label = "sheet"
+
+	return [Pos(0, 0, baseThickness - sheetDepth) * sheet]
 
 # Final assembly
 
@@ -384,6 +393,7 @@ parts = []
 
 parts += make_supports()
 parts += make_base()
+parts += make_sheet()
 parts += make_feet(parts[-1])
 parts += make_beam()
 parts += make_shaft()
