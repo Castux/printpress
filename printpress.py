@@ -127,8 +127,11 @@ def make_base():
 
 	topFace = base.faces().sort_by().last
 
-	plateIndent = Plane(topFace) * Rectangle(sheetW, sheetH)
-	base -= extrude(plateIndent, -sheetDepth)
+	plateIndent = Rectangle(sheetW, sheetH) + [
+		Pos(0, sheetH / 2 - 22) * Circle(radius=25),
+		Pos(0, -(sheetH / 2 - 22)) * Circle(radius=25)
+	]
+	base -= extrude(Plane(topFace) * plateIndent, -sheetDepth)
 
 	# Sockets for supports
 
@@ -244,6 +247,7 @@ def make_beam():
 	beam.label = "beam"
 
 	beamPeg = make_beam_peg()
+	beamPeg = fillet(beamPeg.edges().group_by()[1], radius=4)
 	beamPeg.label = "beamPeg"
 
 	return [
