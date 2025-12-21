@@ -34,6 +34,7 @@ shaftRadius = 20
 hingeHeight = 30
 shaftHeight = 105
 
+typeHeight = 8
 
 def make_support_thread(external, eps):
 	return IsoThread(
@@ -382,11 +383,27 @@ def make_sheet():
 	sheet = Box(sheetW - 2 * eps, sheetH - 2 * eps, sheetDepth - eps, align=hCenter)
 
 	sk = Rectangle(sheetW - 2 * margin, sheetH - 2 * margin)
-	sheet -= extrude(Plane(sheet.faces().sort_by().last) * sk, amount= -8)
+	sheet -= extrude(Plane(sheet.faces().sort_by().last) * sk, amount= -typeHeight)
 	sheet.label = "sheet"
 
 	return [Pos(0, 0, baseThickness - sheetDepth) * sheet]
 
+def make_type():
+	txt = Text(
+		"Eat shit and die, you unsufferable pedantic twat!",
+		font_size=12,
+		font_path="fonts/Canterbury.ttf",
+		text_align=(TextAlign.LEFT, TextAlign.BOTTOM)
+	)
+
+
+	letterHeight = 3
+
+	box = Pos(0, -2) * Box(txt.bounding_box().size.X, 12, typeHeight - letterHeight,
+		align=(Align.MIN, Align.MIN, Align.MAX))
+	txt = extrude(txt, letterHeight)
+
+	return [box, txt]
 # Final assembly
 
 parts = []
@@ -399,6 +416,7 @@ parts += make_beam()
 parts += make_shaft()
 parts += make_press()
 parts += make_handle()
+parts += make_type()
 
 assem = Compound(children=parts)
 show(assem)
