@@ -17,6 +17,7 @@ sheetW = 120
 sheetH = 180
 sheetMargin = 6
 sheetDepth = 10
+sheetInnerMargin = 6
 
 supportMargin = 40
 supportOffset = (sheetW + sheetMargin + supportMargin) / 2
@@ -379,44 +380,48 @@ def make_handle():
 	return [Pos(0, 0, baseThickness + hingeHeight + shaftHeight) * handle]
 
 def make_sheet():
-	margin = 10
 	sheet = Box(sheetW - 2 * eps, sheetH - 2 * eps, sheetDepth - eps, align=hCenter)
 
-	sk = Rectangle(sheetW - 2 * margin, sheetH - 2 * margin)
+	sk = Rectangle(sheetW - 2 * sheetInnerMargin, sheetH - 2 * sheetInnerMargin)
 	sheet -= extrude(Plane(sheet.faces().sort_by().last) * sk, amount= -typeHeight)
 	sheet.label = "sheet"
 
 	return [Pos(0, 0, baseThickness - sheetDepth) * sheet]
 
 def make_type():
+	txt_size = 12
 	txt = Text(
-		"Eat shit and die, you unsufferable pedantic twat!",
-		font_size=12,
+		"Ichabod Hawthorne!",
+		font_size=txt_size,
 		font_path="fonts/Canterbury.ttf",
 		text_align=(TextAlign.LEFT, TextAlign.BOTTOM)
 	)
 
-
 	letterHeight = 3
 
-	box = Pos(0, -2) * Box(txt.bounding_box().size.X, 12, typeHeight - letterHeight,
-		align=(Align.MIN, Align.MIN, Align.MAX))
+	box = Pos(txt.bounding_box().min.X, -txt_size/6) * Box(
+		txt.bounding_box().size.X, txt_size, typeHeight - letterHeight,
+		align=(Align.MIN, Align.MIN, Align.MAX)
+	)
 	txt = extrude(txt, letterHeight)
+	rect = Rectangle(sheetW - 2 * sheetInnerMargin, sheetH - 2 * sheetInnerMargin,
+		align=(Align.MIN, Align.MIN)
+	)
 
-	return [box, txt]
+	return [box, txt, rect]
 # Final assembly
 
 parts = []
 
-parts += make_supports()
-parts += make_base()
+#parts += make_supports()
+#parts += make_base()
 parts += make_sheet()
-parts += make_feet(parts[-1])
-parts += make_beam()
-parts += make_shaft()
-parts += make_press()
-parts += make_handle()
-parts += make_type()
+#parts += make_feet(parts[-1])
+#parts += make_beam()
+#parts += make_shaft()
+#parts += make_press()
+#parts += make_handle()
+#parts += make_type()
 
 assem = Compound(children=parts)
 show(assem)
