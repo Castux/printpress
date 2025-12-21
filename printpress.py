@@ -271,8 +271,8 @@ def make_shaft_hinge(withEps=False):
 	innerRadius = 12
 
 	if withEps:
-		radius += eps
-		innerRadius += eps
+		radius += 2*eps
+		innerRadius += 2*eps
 
 	sk = Line((0, emptyThickness), (radius, emptyThickness))
 	sk += Line(sk @ 1, sk @ 1 + (0, dy - emptyThickness))
@@ -388,4 +388,4 @@ parts += make_handle()
 
 assem = Compound(children=parts)
 show(assem)
-# export_step(assem, "print.step")
+export_step(assem, "print.step")
