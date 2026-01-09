@@ -3,3 +3,4 @@ venv-win
 *.stl
 *.step
 *.3mf
+.DS_Store
