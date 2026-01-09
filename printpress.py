@@ -409,18 +409,19 @@ def make_type():
 	)
 
 	return [box, txt, rect]
+
 # Final assembly
 
 parts = []
 
-#parts += make_supports()
-#parts += make_base()
+parts += make_supports()
+parts += make_base()
 parts += make_sheet()
-#parts += make_feet(parts[-1])
-#parts += make_beam()
-#parts += make_shaft()
-#parts += make_press()
-#parts += make_handle()
+parts += make_feet(parts[-1])
+parts += make_beam()
+parts += make_shaft()
+parts += make_press()
+parts += make_handle()
 #parts += make_type()
 
 assem = Compound(children=parts)

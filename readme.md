@@ -12,4 +12,4 @@ pip install -r requirements.txt
 fw123d printpress.py
 ```
 
-Open `http://127.0.0.1:3939/viewer` in browser
+Open `http://127.0.0.1:3939/viewer` in browser. The view updates anytime the source is saved. Comment out some parts for faster execution.
